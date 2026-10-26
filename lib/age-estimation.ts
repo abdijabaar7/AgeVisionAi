@@ -15,8 +15,21 @@ export function validateAgeRange(low: unknown, high: unknown): AgeRange {
 }
 
 export async function estimateAge(bytes: Uint8Array): Promise<AgeRange> {
-  if (!process.env.AWS_REGION) throw new EstimateError("CONFIGURATION");
-  const client = new RekognitionClient({ region: process.env.AWS_REGION, requestHandler: undefined });
+  const region = process.env.APP_AWS_REGION || process.env.AWS_REGION;
+  const accessKeyId = process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
+
+  if (!region) throw new EstimateError("CONFIGURATION");
+
+  const credentials = (accessKeyId && secretAccessKey) 
+    ? { accessKeyId, secretAccessKey } 
+    : undefined;
+
+  const client = new RekognitionClient({ 
+    region, 
+    credentials,
+    requestHandler: undefined 
+  });
   try {
     const response = await client.send(new DetectFacesCommand({ Image: { Bytes: bytes }, Attributes: ["AGE_RANGE"] }), { abortSignal: AbortSignal.timeout(15_000) });
     const faces = response.FaceDetails ?? [];
