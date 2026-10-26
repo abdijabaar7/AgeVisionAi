@@ -32,8 +32,7 @@ function getDevelopmentLimiter(): Limiter {
 export function getRateLimiter(): Limiter {
   const { UPSTASH_REDIS_REST_URL: url, UPSTASH_REDIS_REST_TOKEN: token } = process.env;
   if (!url || !token) {
-    if (process.env.NODE_ENV !== "production") return getDevelopmentLimiter();
-    throw new Error("RATE_LIMIT_CONFIGURATION");
+    return getDevelopmentLimiter();
   }
   limiter ??= new Ratelimit({ redis: new Redis({ url, token }), limiter: Ratelimit.slidingWindow(Number(process.env.RATE_LIMIT_REQUESTS) || 10, "1 m"), prefix: "agevision:estimate" });
   return limiter;

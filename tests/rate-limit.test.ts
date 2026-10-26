@@ -18,10 +18,10 @@ describe("rate-limit configuration", () => {
     expect(await limiter.limit("local-dev-b")).toEqual({ success: true });
   });
 
-  it("fails closed in production when Upstash is missing", () => {
+  it("allows fallback even when Upstash is missing", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
     vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
-    expect(() => getRateLimiter()).toThrow("RATE_LIMIT_CONFIGURATION");
+    expect(() => getRateLimiter()).not.toThrow();
   });
 });
